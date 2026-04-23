@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
 from werkzeug.utils import secure_filename
 import os
-from model import main
+from main import main
 
 app = Flask(__name__)
 app.secret_key = "supersecretkey"
