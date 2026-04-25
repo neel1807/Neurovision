@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diabetic Retinopathy Detection</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .navbar {
+            background: rgba(44, 62, 80, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar-brand {
+            color: white !important;
+            font-weight: 700;
+            font-size: 1.5rem;
+        }
+
+        .nav-link {
+            color: rgba(255, 255, 255, 0.8) !important;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: white !important;
+            transform: translateY(-2px);
+        }
+
+        .hero-section {
+            padding: 100px 0;
+            text-align: center;
+            color: white;
+        }
+
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            animation: fadeInUp 1s ease;
+        }
+
+        .hero-subtitle {
+            font-size: 1.3rem;
+            margin-bottom: 40px;
+            opacity: 0.9;
+            animation: fadeInUp 1s ease 0.3s both;
+        }
+
+        .cta-buttons {
+            animation: fadeInUp 1s ease 0.6s both;
+        }
+
+        .btn-custom {
+            padding: 15px 30px;
+            margin: 0 10px;
+            border-radius: 50px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            border: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary-custom {
+            background: linear-gradient(45deg, var(--secondary-color), #5dade2);
+            color: white;
+        }
+
+        .btn-primary-custom:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(52, 152, 219, 0.4);
+        }
+
+        .btn-outline-custom {
+            background: transparent;
+            border: 2px solid white;
+            color: white;
+        }
+
+        .btn-outline-custom:hover {
+            background: white;
+            color: var(--primary-color);
+            transform: translateY(-3px);
+        }
+
+        .categories-section {
+            padding: 80px 0;
+            background: white;
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 60px;
+            color: var(--primary-color);
+            font-weight: 700;
+            font-size: 2.5rem;
+        }
+
+        .category-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            border-left: 5px solid;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .category-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, currentColor, transparent);
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+        }
+
+        .category-card:hover::before {
+            transform: translateX(100%);
+        }
+
+        .category-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .no-dr { border-left-color: var(--success-color); color: var(--success-color); }
+        .mild { border-left-color: #2ecc71; color: #2ecc71; }
+        .moderate { border-left-color: var(--warning-color); color: var(--warning-color); }
+        .severe { border-left-color: #e67e22; color: #e67e22; }
+        .proliferative { border-left-color: var(--danger-color); color: var(--danger-color); }
+
+        .category-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .category-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+        }
+
+        .category-description {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .steps-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .steps-list li {
+            padding: 8px 0;
+            color: #555;
+            position: relative;
+            padding-left: 25px;
+        }
+
+        .steps-list li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: currentColor;
+            font-weight: bold;
+        }
+
+        .features-section {
+            padding: 80px 0;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        }
+
+        .feature-card {
+            background: white;
+            border-radius: 15px;
+            padding: 40px 30px;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            height: 100%;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            color: var(--secondary-color);
+            margin-bottom: 20px;
+        }
+
+        .feature-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+        }
+
+        .footer {
+            background: var(--primary-color);
+            color: white;
+            padding: 40px 0;
+            text-align: center;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.5rem;
+            }
+            
+            .category-card {
+                margin-bottom: 20px;
+            }
+            
+            .btn-custom {
+                display: block;
+                margin: 10px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="#"><i class="fas fa-eye"></i> DR Detection</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#home">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#categories">Categories</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#features">Features</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero-section">
+        <div class="container">
+            <h1 class="hero-title">Diabetic Retinopathy Detection</h1>
+            <p class="hero-subtitle">Advanced AI-powered screening for early detection and prevention of vision loss</p>
+            <div class="cta-buttons">
+                <a href="{{ url_for('dashboard') }}" class="btn btn-custom btn-primary-custom pulse-animation">
+                    <i class="fas fa-upload"></i> Start Screening
+                </a>
+                <a href="#categories" class="btn btn-custom btn-outline-custom">
+                    <i class="fas fa-info-circle"></i> Learn More
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Categories Section -->
+    <section id="categories" class="categories-section">
+        <div class="container">
+            <h2 class="section-title">Understanding Diabetic Retinopathy Categories</h2>
+            <p class="text-center mb-5" style="font-size: 1.1rem; color: #666; max-width: 800px; margin: 0 auto 60px;">
+                Diabetic retinopathy progresses through different stages of severity. Early detection and proper treatment at each stage can help preserve your vision. Learn about each category and the recommended actions below.
+            </p>
+            <div class="row">
+                <div class="col-lg-6 col-md-12">
+                    <div class="category-card no-dr">
+                        <i class="fas fa-check-circle category-icon"></i>
+                        <h3 class="category-title">No DR (Diabetic Retinopathy)</h3>
+                        <p class="category-description">
+                            No signs of diabetic retinopathy detected. The retina appears healthy with no visible damage from diabetes.
+                        </p>
+                        <h5 style="color: var(--primary-color); margin-bottom: 15px;">Recommended Steps:</h5>
+                        <ul class="steps-list">
+                            <li>Continue regular eye exams annually</li>
+                            <li>Maintain optimal blood sugar control</li>
+                            <li>Monitor blood pressure and cholesterol</li>
+                            <li>Follow a healthy diet and exercise routine</li>
+                            <li>Take prescribed diabetes medications as directed</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="col-lg-6 col-md-12">
+                    <div class="category-card mild">
+                        <i class="fas fa-exclamation-triangle category-icon"></i>
+                        <h3 class="category-title">Mild Diabetic Retinopathy</h3>
+                        <p class="category-description">
+                            Small areas of swelling in the retina's blood vessels (microaneurysms). Early stage with minimal symptoms.
+                        </p>
+                        <h5 style="color: var(--primary-color); margin-bottom: 15px;">Recommended Steps:</h5>
+                        <ul class="steps-list">
+                            <li>Schedule eye exams every 6-12 months</li>
+                            <li>Improve diabetes management immediately</li>
+                            <li>Control blood pressure (target <140/90)</li>
+                            <li>Consider diabetes education classes</li>
+                            <li>Discuss medication adjustments with doctor</li>
+                            <li>Implement lifestyle changes</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="col-lg-6 col-md-12">
+                    <div class="category-card moderate">
+                        <i class="fas fa-eye category-icon"></i>
+                        <h3 class="category-title">Moderate Diabetic Retinopathy</h3>
+                        <p class="category-description">
+                            Blood vessels are blocked, depriving areas of the retina of blood supply. May cause vision changes.
+                        </p>
+                        <h5 style="color: var(--primary-color); margin-bottom: 15px;">Recommended Steps:</h5>
+                        <ul class="steps-list">
+                            <li>Eye exams every 3-6 months</li>
+                            <li>Immediate diabetes management optimization</li>
+                            <li>Consider referral to retinal specialist</li>
+                            <li>Monitor for vision changes daily</li>
+                            <li>Strict blood pressure control</li>
+                            <li>Consider anti-VEGF injections if needed</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="col-lg-6 col-md-12">
+                    <div class="category-card severe">
+                        <i class="fas fa-exclamation-circle category-icon"></i>
+                        <h3 class="category-title">Severe Diabetic Retinopathy</h3>
+                        <p class="category-description">
+                            Many blood vessels are blocked, causing significant areas of retina to lose blood supply. High risk of vision loss.
+                        </p>
+                        <h5 style="color: var(--primary-color); margin-bottom: 15px;">Immediate Actions Required:</h5>
+                        <ul class="steps-list">
+                            <li>Urgent referral to retinal specialist</li>
+                            <li>Eye exams every 2-3 months</li>
+                            <li>Consider laser photocoagulation</li>
+                            <li>Anti-VEGF injections may be needed</li>
+                            <li>Aggressive diabetes control</li>
+                            <li>Monitor for proliferative changes</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="col-lg-12">
+                    <div class="category-card proliferative">
+                        <i class="fas fa-ambulance category-icon"></i>
+                        <h3 class="category-title">Proliferative Diabetic Retinopathy</h3>
+                        <p class="category-description">
+                            Most advanced stage. New blood vessels grow in the retina and vitreous, which can bleed and cause severe vision loss or blindness.
+                        </p>
+                        <h5 style="color: var(--primary-color); margin-bottom: 15px;">Emergency Treatment Required:</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <ul class="steps-list">
+                                    <li>Immediate ophthalmologist consultation</li>
+                                    <li>Urgent laser surgery (panretinal photocoagulation)</li>
+                                    <li>Anti-VEGF injections</li>
+                                    <li>Consider vitrectomy if needed</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <ul class="steps-list">
+                                    <li>Monthly follow-up appointments</li>
+                                    <li>Aggressive systemic control</li>
+                                    <li>Monitor for complications</li>
+                                    <li>Vision rehabilitation if needed</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features-section">
+        <div class="container">
+            <h2 class="section-title">Why Choose Our AI Detection System?</h2>
+            <div class="row">
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="feature-card">
+                        <i class="fas fa-brain feature-icon"></i>
+                        <h4 class="feature-title">AI-Powered Analysis</h4>
+                        <p>Advanced deep learning algorithms trained on thousands of retinal images for accurate detection.</p>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="feature-card">
+                        <i class="fas fa-clock feature-icon"></i>
+                        <h4 class="feature-title">Quick Results</h4>
+                        <p>Get instant analysis results within seconds of uploading your retinal image.</p>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="feature-card">
+                        <i class="fas fa-shield-alt feature-icon"></i>
+                        <h4 class="feature-title">Secure & Private</h4>
+                        <p>Your medical data is encrypted and stored securely with full privacy protection.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 Diabetic Retinopathy Detection System. Helping preserve vision through AI.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Smooth scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Navbar background on scroll
+        window.addEventListener('scroll', function() {
+            const navbar = document.querySelector('.navbar');
+            if (window.scrollY > 50) {
+                navbar.style.background = 'rgba(44, 62, 80, 0.98)';
+            } else {
+                navbar.style.background = 'rgba(44, 62, 80, 0.95)';
+            }
+        });
+    </script>
+</body>
+</html>

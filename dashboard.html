@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DR Detection - Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --primary: #2c3e50;
+            --blue:    #3498db;
+            --green:   #27ae60;
+            --yellow:  #f1c40f;
+            --orange:  #e67e22;
+            --red:     #e74c3c;
+            --purple:  #8e44ad;
+            --info:    #17a2b8;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            font-family: 'Plus Jakarta Sans', 'Segoe UI', sans-serif;
+        }
+
+        /* ── Navbar ─────────────────────────────── */
+        .navbar {
+            background: rgba(20, 28, 40, 0.94);
+            backdrop-filter: blur(14px);
+            box-shadow: 0 2px 24px rgba(0,0,0,0.18);
+            border-bottom: 1px solid rgba(255,255,255,0.07);
+        }
+        .navbar-brand, .nav-link { color: white !important; font-weight: 600; }
+        .nav-user {
+            background: rgba(255,255,255,0.1); border-radius: 20px;
+            padding: 5px 14px; font-size: 0.85rem; color: rgba(255,255,255,0.85) !important;
+        }
+
+        .main-content { padding: 90px 0 60px; }
+
+        /* ── White cards ────────────────────────── */
+        .card-white {
+            background: white; border-radius: 20px; padding: 32px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.12); margin-bottom: 24px;
+        }
+
+        /* ── Upload ─────────────────────────────── */
+        .upload-area {
+            border: 2.5px dashed #d0d7de; border-radius: 14px;
+            padding: 48px 20px; text-align: center;
+            background: #f8fafc; transition: all 0.25s;
+        }
+        .upload-area:hover { border-color: var(--blue); background: #eff6ff; }
+        .upload-area.selected { border-color: var(--green); background: #f0fdf4; }
+        .upload-icon { font-size: 3.2rem; color: var(--blue); margin-bottom: 14px; }
+        .btn-upload {
+            background: linear-gradient(45deg, #3498db, #5dade2);
+            border: none; border-radius: 50px;
+            padding: 14px 36px; color: white; font-weight: 700;
+            font-size: 1rem; transition: all 0.25s; width: 100%; margin-top: 20px;
+        }
+        .btn-upload:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(52,152,219,0.35); color: white; }
+
+        /* ── Enhancement toggle ─────────────────── */
+        .enhance-toggle {
+            display: flex; align-items: center; gap: 14px;
+            padding: 14px 18px; border-radius: 14px; margin-top: 20px;
+            background: linear-gradient(135deg, rgba(52,152,219,0.07), rgba(39,174,96,0.04));
+            border: 1.5px solid rgba(52,152,219,0.22);
+            cursor: pointer; transition: all 0.2s; user-select: none;
+        }
+        .enhance-toggle:hover { border-color: rgba(52,152,219,0.48); }
+        .enhance-toggle.on { border-color: var(--blue); background: linear-gradient(135deg, rgba(52,152,219,0.14), rgba(39,174,96,0.08)); }
+        .et-track {
+            width: 44px; height: 24px; border-radius: 12px;
+            background: #cbd5e1; flex-shrink: 0; position: relative; transition: background 0.2s;
+        }
+        .et-track::after {
+            content: ''; position: absolute; top: 3px; left: 3px;
+            width: 18px; height: 18px; border-radius: 50%;
+            background: white; transition: transform 0.22s;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+        }
+        .enhance-toggle.on .et-track { background: var(--blue); }
+        .enhance-toggle.on .et-track::after { transform: translateX(20px); }
+        .et-label strong { display: block; color: var(--primary); font-size: 0.9rem; font-weight: 700; }
+        .et-label small  { font-size: 0.75rem; color: #94a3b8; }
+        .et-pill {
+            margin-left: auto; flex-shrink: 0; font-size: 0.68rem; font-weight: 700;
+            padding: 3px 10px; border-radius: 20px;
+            background: rgba(52,152,219,0.1); color: var(--blue);
+            border: 1px solid rgba(52,152,219,0.22); transition: all 0.2s;
+        }
+        .enhance-toggle.on .et-pill { background: rgba(39,174,96,0.12); color: var(--green); border-color: rgba(39,174,96,0.3); }
+
+        /* ── Analyzed image ─────────────────────── */
+        .img-card {
+            background: white; border-radius: 16px; overflow: hidden;
+            box-shadow: 0 8px 28px rgba(0,0,0,0.1); margin-bottom: 24px;
+        }
+        .img-card-label {
+            padding: 12px 18px; font-weight: 700; font-size: 0.85rem;
+            color: #475569; border-bottom: 1px solid #f1f5f9;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .img-card img { width: 100%; display: block; }
+
+        /* ── Result card ────────────────────────── */
+        .result-card {
+            background: white; border-radius: 20px; padding: 32px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.12); margin-bottom: 24px;
+            position: relative; overflow: hidden;
+        }
+        .result-card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+            background: var(--sev-color, var(--blue));
+        }
+        .sev-pill {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 10px 22px; border-radius: 50px;
+            font-weight: 800; font-size: 1rem; color: white;
+            text-transform: uppercase; letter-spacing: 0.06em;
+            background: var(--sev-color); box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+            margin-bottom: 10px;
+        }
+        .sev-0 { --sev-color: #10b981; }
+        .sev-1 { --sev-color: #f59e0b; }
+        .sev-2 { --sev-color: #f97316; }
+        .sev-3 { --sev-color: #ef4444; }
+        .sev-4 { --sev-color: #9333ea; }
+
+        .sev-track { height: 10px; background: #e2e8f0; border-radius: 5px; overflow: hidden; margin-bottom: 8px; }
+        .sev-fill  { height: 100%; border-radius: 5px; background: var(--sev-color); transition: width 1.1s cubic-bezier(0.16,1,0.3,1); }
+        .sev-labels { display: flex; justify-content: space-between; }
+        .sev-labels span { font-size: 0.68rem; color: #94a3b8; font-weight: 500; }
+
+        .desc-block {
+            background: #f8fafc; border-left: 4px solid var(--sev-color);
+            border-radius: 0 12px 12px 0; padding: 16px 18px; margin: 18px 0;
+        }
+        .desc-block h6 { color: #0f172a; font-weight: 700; font-size: 0.95rem; margin-bottom: 6px; }
+        .desc-block p  { color: #475569; font-size: 0.88rem; line-height: 1.65; margin: 0; }
+
+        .steps-title { font-size: 0.95rem; font-weight: 700; color: var(--primary); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .step-row    { display: flex; align-items: flex-start; gap: 13px; padding: 12px 0; border-bottom: 1px solid #f1f5f9; }
+        .step-row:last-child { border-bottom: none; }
+        .step-dot {
+            width: 38px; height: 38px; border-radius: 11px;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0; font-size: 0.95rem; color: white;
+        }
+        .step-dot.low    { background: linear-gradient(135deg,#10b981,#34d399); }
+        .step-dot.medium { background: linear-gradient(135deg,#f97316,#fbbf24); }
+        .step-dot.high   { background: linear-gradient(135deg,#ef4444,#f97316); }
+        .step-text strong { display: block; color: #0f172a; font-size: 0.9rem; font-weight: 700; margin-bottom: 3px; }
+        .step-text p { color: #64748b; font-size: 0.84rem; line-height: 1.5; margin: 0; }
+
+        .alert-strip { border-radius: 13px; padding: 14px 18px; margin-top: 14px; display: flex; align-items: flex-start; gap: 11px; font-size: 0.86rem; }
+        .alert-strip.danger { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
+        .alert-strip.info   { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; }
+        .alert-strip i { margin-top: 1px; flex-shrink: 0; }
+
+        /* ── Placeholder ────────────────────────── */
+        .placeholder-card {
+            background: white; border-radius: 20px; padding: 48px 32px;
+            text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+        .ph-icon {
+            width: 76px; height: 76px; border-radius: 22px;
+            background: linear-gradient(135deg,#e0e7ff,#dbeafe);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2rem; color: #6366f1; margin: 0 auto 22px;
+        }
+        .placeholder-card h4 { color: var(--primary); font-weight: 800; font-size: 1.35rem; margin-bottom: 10px; }
+        .placeholder-card p  { color: #64748b; font-size: 0.92rem; margin-bottom: 26px; }
+        .tip-list { text-align: left; display: inline-block; }
+        .tip-list li { color: #475569; font-size: 0.88rem; padding: 5px 0; list-style: none; display: flex; align-items: center; gap: 9px; }
+        .tip-list li::before { content: '✓'; color: var(--green); font-weight: 800; }
+
+        /* ══════════════════════════════════════════
+           PIPELINE SECTION
+        ══════════════════════════════════════════ */
+        .pipeline-section {
+            background: rgba(10, 8, 30, 0.78);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 26px; padding: 40px;
+            margin-top: 36px;
+            box-shadow: 0 28px 72px rgba(0,0,0,0.4);
+        }
+
+        .pipe-header {
+            display: flex; align-items: flex-start; justify-content: space-between;
+            flex-wrap: wrap; gap: 20px; margin-bottom: 32px;
+        }
+        .pipe-title-row { display: flex; align-items: center; gap: 16px; }
+        .pipe-badge {
+            width: 54px; height: 54px; border-radius: 16px; flex-shrink: 0;
+            background: linear-gradient(135deg,#38bdf8,#818cf8);
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 1.4rem;
+            box-shadow: 0 8px 22px rgba(56,189,248,0.32);
+        }
+        .pipe-title { color: white; font-size: 1.75rem; font-weight: 800; margin: 0; letter-spacing: -0.02em; }
+        .pipe-sub   { color: rgba(255,255,255,0.48); font-size: 0.9rem; margin: 4px 0 0; }
+
+        .qchips { display: flex; gap: 10px; flex-wrap: wrap; }
+        .qchip {
+            background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 50px; padding: 7px 16px;
+            display: flex; align-items: center; gap: 7px;
+        }
+        .ql { font-size: 0.7rem; color: rgba(255,255,255,0.38); text-transform: uppercase; letter-spacing: 0.07em; }
+        .qv { font-size: 0.9rem; color: white; }
+        .qv strong { color: #38bdf8; font-weight: 700; }
+        .qchip.good { border-color: rgba(52,211,153,0.42); }
+        .qchip.good .qv strong { color: #34d399; }
+        .qchip.warn { border-color: rgba(251,191,36,0.42); }
+        .qchip.warn .qv strong { color: #fbbf24; }
+
+        /* Flow strip */
+        .flow-strip {
+            display: flex; align-items: center; gap: 4px;
+            overflow-x: auto; padding: 4px 0 24px;
+            scrollbar-width: none; margin-bottom: 4px;
+        }
+        .flow-strip::-webkit-scrollbar { display: none; }
+        .flow-node { display: flex; flex-direction: column; align-items: center; gap: 6px; flex-shrink: 0; }
+        .flow-bubble {
+            width: 44px; height: 44px; border-radius: 50%;
+            background: rgba(255,255,255,0.07);
+            border: 2px solid rgba(255,255,255,0.16);
+            display: flex; align-items: center; justify-content: center; font-size: 1.1rem;
+        }
+        .flow-node.first .flow-bubble { border-color: rgba(148,163,184,0.6); }
+        .flow-node.last  .flow-bubble { border-color: #34d399; background: rgba(52,211,153,0.14); box-shadow: 0 0 12px rgba(52,211,153,0.28); }
+        .flow-lbl { font-size: 0.6rem; color: rgba(255,255,255,0.35); text-align: center; max-width: 58px; line-height: 1.25; font-weight: 500; }
+        .flow-arr { color: rgba(255,255,255,0.18); font-size: 0.9rem; flex-shrink: 0; }
+
+        .pipe-divider { height: 1px; background: rgba(255,255,255,0.07); margin: 4px 0 28px; }
+
+        /* Stage cards */
+        .stages-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(200px,1fr));
+            gap: 16px; margin-bottom: 36px;
+        }
+        .stage-card {
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.09);
+            border-radius: 18px; overflow: hidden; cursor: pointer; position: relative;
+            transition: transform 0.22s, border-color 0.22s, box-shadow 0.22s;
+        }
+        .stage-card:hover { transform: translateY(-6px); border-color: rgba(56,189,248,0.5); box-shadow: 0 18px 40px rgba(0,0,0,0.45); }
+        .stage-num {
+            position: absolute; top: 10px; left: 10px; z-index: 2;
+            background: rgba(0,0,0,0.6); color: rgba(255,255,255,0.7);
+            font-family: 'DM Mono', monospace; font-size: 0.66rem; font-weight: 500;
+            padding: 3px 9px; border-radius: 7px;
+        }
+        .stage-thumb { position: relative; aspect-ratio: 1; overflow: hidden; background: #06040f; }
+        .stage-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.32s; }
+        .stage-card:hover .stage-thumb img { transform: scale(1.06); }
+        .stage-overlay {
+            position: absolute; inset: 0;
+            background: rgba(0,0,0,0); transition: background 0.22s;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .stage-card:hover .stage-overlay { background: rgba(0,0,0,0.4); }
+        .stage-overlay span {
+            opacity: 0; transition: opacity 0.22s;
+            background: rgba(56,189,248,0.9); color: white;
+            font-size: 0.78rem; font-weight: 700; padding: 6px 14px; border-radius: 22px;
+        }
+        .stage-card:hover .stage-overlay span { opacity: 1; }
+        .stage-body { padding: 14px 13px 13px; }
+        .stage-name-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+        .stage-emoji { font-size: 1.25rem; }
+        .stage-title { color: white; font-size: 0.9rem; font-weight: 700; margin: 0; line-height: 1.3; }
+        .stage-desc  { color: rgba(255,255,255,0.44); font-size: 0.74rem; line-height: 1.55; margin: 0 0 9px; }
+        .stage-tags  { display: flex; flex-wrap: wrap; gap: 4px; }
+        .stage-tag {
+            background: rgba(56,189,248,0.1); border: 1px solid rgba(56,189,248,0.22);
+            color: rgba(255,255,255,0.58); font-family: 'DM Mono', monospace;
+            font-size: 0.65rem; padding: 2px 8px; border-radius: 5px;
+        }
+        .stage-tag strong { color: #38bdf8; }
+
+        /* Before/After */
+        .ba-section { margin-top: 6px; }
+        .ba-title { color: white; font-size: 1.1rem; font-weight: 700; margin-bottom: 14px; letter-spacing: -0.01em; }
+        .ba-wrap {
+            position: relative; border-radius: 18px; overflow: hidden;
+            max-width: 600px; aspect-ratio: 1; cursor: col-resize; user-select: none;
+            border: 1px solid rgba(255,255,255,0.09);
+            box-shadow: 0 12px 52px rgba(0,0,0,0.55);
+        }
+        .ba-wrap img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+        .ba-clip  { position: absolute; inset: 0; clip-path: inset(0 50% 0 0); }
+        .ba-line  {
+            position: absolute; top: 0; bottom: 0; left: 50%; width: 2px;
+            background: white; transform: translateX(-50%);
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 0 10px rgba(255,255,255,0.4);
+        }
+        .ba-knob {
+            width: 40px; height: 40px; background: white; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            color: #334155; font-weight: 700; font-size: 0.9rem;
+            box-shadow: 0 3px 14px rgba(0,0,0,0.4);
+        }
+        .ba-tag {
+            position: absolute; bottom: 13px;
+            background: rgba(0,0,0,0.7); backdrop-filter: blur(8px);
+            color: white; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em;
+            padding: 5px 12px; border-radius: 22px; font-family: 'DM Mono', monospace;
+        }
+        .ba-tag.l { left: 13px; }
+        .ba-tag.r { right: 13px; }
+
+        /* Lightbox */
+        .lb { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 9999; align-items: center; justify-content: center; padding: 20px; }
+        .lb.open { display: flex; }
+        .lb-box { background: #0d0b1e; border: 1px solid rgba(255,255,255,0.1); border-radius: 22px; max-width: 880px; width: 100%; overflow: hidden; position: relative; animation: lbIn 0.22s cubic-bezier(0.16,1,0.3,1); }
+        @keyframes lbIn { from { opacity:0; transform:scale(0.93); } to { opacity:1; transform:scale(1); } }
+        .lb-close { position: absolute; top: 13px; right: 13px; background: rgba(255,255,255,0.1); border: none; color: white; width: 34px; height: 34px; border-radius: 50%; font-size: 1rem; cursor: pointer; z-index: 1; }
+        .lb-close:hover { background: rgba(255,255,255,0.2); }
+        .lb-img   { width: 100%; max-height: 64vh; object-fit: contain; display: block; }
+        .lb-cap   { padding: 20px 26px; }
+        .lb-cap h4 { color: white; font-size: 1.05rem; font-weight: 800; margin: 0 0 7px; }
+        .lb-cap p  { color: rgba(255,255,255,0.5); font-size: 0.85rem; margin: 0; line-height: 1.65; }
+
+        /* Animations */
+        @keyframes fadeUp { from { opacity:0; transform:translateY(22px); } to { opacity:1; transform:none; } }
+        .fade-in { animation: fadeUp 0.52s cubic-bezier(0.16,1,0.3,1) both; }
+
+        @media (max-width: 768px) {
+            .pipeline-section { padding: 22px 16px; }
+            .stages-grid { grid-template-columns: repeat(2,1fr); gap: 10px; }
+            .pipe-header { flex-direction: column; }
+            .ba-wrap { max-width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg fixed-top">
+    <div class="container">
+        <a class="navbar-brand" href="{{ url_for('index') }}">
+            <i class="fas fa-eye me-2"></i>DR Detection
+        </a>
+        <div class="navbar-nav ms-auto">
+            <span class="nav-link nav-user">
+                <i class="fas fa-user-circle me-1"></i>{{ session.username or 'Guest' }}
+            </span>
+        </div>
+    </div>
+</nav>
+
+<div class="main-content">
+<div class="container">
+
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="mb-4">
+        {% for cat, msg in messages %}
+        <div class="alert alert-{{ cat }} alert-dismissible fade show" style="border-radius:13px; border:none;">
+            <i class="fas fa-circle-info me-2"></i>{{ msg }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <!-- ── ROW 1: Upload + Results ─────────────── -->
+    <div class="row g-4">
+
+        <!-- LEFT: Upload + image preview -->
+        <div class="col-lg-5">
+            <div class="card-white fade-in">
+                <h5 style="font-weight:800;color:var(--primary);font-size:1.1rem;margin-bottom:20px;">
+                    <i class="fas fa-cloud-upload-alt me-2" style="color:var(--blue);"></i>Upload Retinal Image
+                </h5>
+                <form method="POST" enctype="multipart/form-data">
+                    <div class="upload-area" id="uploadArea">
+                        <div class="upload-icon"><i class="fas fa-image"></i></div>
+                        <h5 id="uploadLabel" style="color:var(--primary);font-weight:700;">Drop image here or click to browse</h5>
+                        <p class="text-muted" style="font-size:0.85rem;">PNG, JPG, TIFF, BMP — up to 16 MB</p>
+                        <input type="file" class="form-control mt-3" name="file" id="fileInput" accept="image/*" required>
+                    </div>
+
+                    <!-- Enhancement toggle -->
+                    <div class="enhance-toggle" id="enhToggle" onclick="toggleEnhance()">
+                        <div class="et-track" id="etTrack"></div>
+                        <div class="et-label">
+                            <strong><i class="fas fa-wand-magic-sparkles me-1"></i>Image Enhancement Pipeline</strong>
+                            <small id="etDesc">Off — raw image sent directly to model</small>
+                        </div>
+                        <span class="et-pill" id="etPill">Off</span>
+                        <input type="hidden" name="use_enhancement" id="useEnhancement" value="0">
+                    </div>
+
+                    <button type="submit" class="btn btn-upload">
+                        <i class="fas fa-microscope me-2"></i>Analyze Image
+                    </button>
+                </form>
+            </div>
+
+            {% if filename %}
+            <div class="img-card fade-in">
+                <div class="img-card-label">
+                    <i class="fas fa-image" style="color:var(--blue);"></i>Analyzed Fundus Image
+                </div>
+                <img src="{{ url_for('static', filename='uploads/' + filename) }}" alt="Fundus">
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- RIGHT: Result or placeholder -->
+        <div class="col-lg-7">
+            {% if prediction %}
+            {% set severity = prediction.split(' - ')[0] | int %}
+
+            <div class="result-card fade-in sev-{{ severity }}">
+                <div class="text-center mb-3">
+                    <div class="sev-pill">
+                        {% if severity == 0 %}<i class="fas fa-check-circle"></i>
+                        {% elif severity == 1 %}<i class="fas fa-exclamation-triangle"></i>
+                        {% elif severity == 2 %}<i class="fas fa-eye"></i>
+                        {% elif severity == 3 %}<i class="fas fa-exclamation-circle"></i>
+                        {% else %}<i class="fas fa-ambulance"></i>{% endif %}
+                        {{ prediction.split(' - ')[1] }}
+                    </div>
+                    <h4 style="font-weight:800;color:var(--primary);font-size:1.25rem;margin:0;">Detection Results</h4>
+                </div>
+
+                <!-- Severity bar -->
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between mb-2">
+                        <small class="text-muted fw-600">Severity Level</small>
+                        <small style="font-weight:800;color:var(--primary);">{{ severity+1 }} / 5</small>
+                    </div>
+                    <div class="sev-track"><div class="sev-fill" style="width:{{ [20,40,60,80,100][severity] }}%;"></div></div>
+                    <div class="sev-labels"><span>No DR</span><span>Mild</span><span>Moderate</span><span>Severe</span><span>Prolif.</span></div>
+                </div>
+
+                <!-- Description -->
+                <div class="desc-block sev-{{ severity }}">
+                    {% if severity == 0 %}
+                    <h6><i class="fas fa-check-circle me-2" style="color:#10b981;"></i>No Diabetic Retinopathy Detected</h6>
+                    <p>Great news — no signs of DR found. Your retina appears healthy with no visible damage from diabetes.</p>
+                    {% elif severity == 1 %}
+                    <h6><i class="fas fa-exclamation-triangle me-2" style="color:#f59e0b;"></i>Mild Diabetic Retinopathy</h6>
+                    <p>Early-stage microaneurysms detected in retinal blood vessels. Minimal symptoms but regular monitoring is important.</p>
+                    {% elif severity == 2 %}
+                    <h6><i class="fas fa-eye me-2" style="color:#f97316;"></i>Moderate Diabetic Retinopathy</h6>
+                    <p>Noticeable vessel blockage depriving areas of the retina of blood supply. Prompt medical attention recommended.</p>
+                    {% elif severity == 3 %}
+                    <h6><i class="fas fa-exclamation-circle me-2" style="color:#ef4444;"></i>Severe Diabetic Retinopathy</h6>
+                    <p>Significant vessel blockage with high risk of vision loss. Urgent specialist referral is required.</p>
+                    {% else %}
+                    <h6><i class="fas fa-ambulance me-2" style="color:#9333ea;"></i>Proliferative Diabetic Retinopathy</h6>
+                    <p>Most advanced stage. Abnormal new vessels growing — can bleed and cause severe vision loss or blindness.</p>
+                    {% endif %}
+                </div>
+
+                <!-- Steps -->
+                <div class="steps-title">
+                    <i class="fas fa-list-check" style="color:var(--blue);"></i>
+                    {% if severity >= 3 %}Emergency Actions Required{% elif severity >= 1 %}Recommended Actions{% else %}Preventive Measures{% endif %}
+                </div>
+
+                {% if severity == 0 %}
+                <div class="step-row"><div class="step-dot low"><i class="fas fa-calendar-check"></i></div><div class="step-text"><strong>Annual Eye Exams</strong><p>Continue yearly comprehensive retinal examinations.</p></div></div>
+                <div class="step-row"><div class="step-dot low"><i class="fas fa-droplet"></i></div><div class="step-text"><strong>Blood Sugar Control</strong><p>Maintain optimal glucose through diet, exercise and medication.</p></div></div>
+                <div class="step-row"><div class="step-dot low"><i class="fas fa-dumbbell"></i></div><div class="step-text"><strong>Healthy Lifestyle</strong><p>Balanced diet and regular activity prevent future complications.</p></div></div>
+                {% elif severity == 1 %}
+                <div class="step-row"><div class="step-dot medium"><i class="fas fa-calendar-alt"></i></div><div class="step-text"><strong>Eye Exams Every 6–12 Months</strong><p>Increased frequency to monitor any progression closely.</p></div></div>
+                <div class="step-row"><div class="step-dot medium"><i class="fas fa-chart-line"></i></div><div class="step-text"><strong>Optimize Diabetes Management</strong><p>Work with your team to improve HbA1c and blood glucose control.</p></div></div>
+                <div class="step-row"><div class="step-dot medium"><i class="fas fa-heartbeat"></i></div><div class="step-text"><strong>Blood Pressure Control</strong><p>Target BP below 140/90 mmHg to slow disease progression.</p></div></div>
+                {% elif severity == 2 %}
+                <div class="step-row"><div class="step-dot medium"><i class="fas fa-user-md"></i></div><div class="step-text"><strong>Retinal Specialist Referral</strong><p>Schedule with a retinal specialist for comprehensive evaluation.</p></div></div>
+                <div class="step-row"><div class="step-dot medium"><i class="fas fa-clock"></i></div><div class="step-text"><strong>Monitoring Every 3–6 Months</strong><p>Frequent exams are essential to catch rapid progression early.</p></div></div>
+                <div class="step-row"><div class="step-dot medium"><i class="fas fa-syringe"></i></div><div class="step-text"><strong>Treatment Options</strong><p>Discuss anti-VEGF injections or laser therapy with your doctor.</p></div></div>
+                {% elif severity == 3 %}
+                <div class="step-row"><div class="step-dot high"><i class="fas fa-exclamation"></i></div><div class="step-text"><strong>Urgent Specialist Care</strong><p>See a retinal specialist within days — do not delay.</p></div></div>
+                <div class="step-row"><div class="step-dot high"><i class="fas fa-bolt"></i></div><div class="step-text"><strong>Laser Photocoagulation</strong><p>Laser treatment may be needed to prevent further damage.</p></div></div>
+                <div class="step-row"><div class="step-dot high"><i class="fas fa-eye-dropper"></i></div><div class="step-text"><strong>Anti-VEGF Injections</strong><p>Intravitreal injections can reduce swelling and neovascularization.</p></div></div>
+                {% else %}
+                <div class="step-row"><div class="step-dot high"><i class="fas fa-ambulance"></i></div><div class="step-text"><strong>Emergency Ophthalmology</strong><p>Contact an ophthalmologist today — same-day consultation needed.</p></div></div>
+                <div class="step-row"><div class="step-dot high"><i class="fas fa-fire"></i></div><div class="step-text"><strong>Panretinal Photocoagulation</strong><p>Urgent laser surgery to stop abnormal vessel growth.</p></div></div>
+                <div class="step-row"><div class="step-dot high"><i class="fas fa-scissors"></i></div><div class="step-text"><strong>Vitrectomy (if needed)</strong><p>Surgical option if significant bleeding has occurred.</p></div></div>
+                <div class="step-row"><div class="step-dot high"><i class="fas fa-calendar-week"></i></div><div class="step-text"><strong>Monthly Follow-ups</strong><p>Frequent monitoring to track treatment response.</p></div></div>
+                {% endif %}
+
+                {% if severity >= 3 %}
+                <div class="alert-strip danger">
+                    <i class="fas fa-phone-alt"></i>
+                    <div><strong>Emergency:</strong> For sudden vision loss, eye pain, or flashes of light — visit the ER or call your ophthalmologist immediately.</div>
+                </div>
+                {% endif %}
+
+             
+            {% else %}
+            <!-- Placeholder -->
+            <div class="placeholder-card fade-in">
+                <div class="ph-icon"><i class="fas fa-eye"></i></div>
+                <h4>Upload an Image to Begin</h4>
+                <p>Select a clear retinal photograph for AI-powered diabetic retinopathy screening.</p>
+                <ul class="tip-list">
+                    <li>Use high-resolution fundus photographs</li>
+                    <li>Ensure good focus, brightness and clarity</li>
+                    <li>Center the optic disc and macula in frame</li>
+                    <li>Avoid blurry, overexposed or cropped images</li>
+                </ul>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════
+         PIPELINE SECTION — only shows when enhancement was ON
+    ══════════════════════════════════════════ -->
+    {% if pipeline_stages %}
+    <div class="pipeline-section fade-in">
+
+        <!-- Header -->
+        <div class="pipe-header">
+            <div class="pipe-title-row">
+                <div class="pipe-badge"><i class="fas fa-layer-group"></i></div>
+                <div>
+                    <h2 class="pipe-title">Enhancement Pipeline</h2>
+                    <p class="pipe-sub">{{ pipeline_stages|length }} processing stages — click any card to view at full resolution</p>
+                </div>
+            </div>
+
+            {% set orig = pipeline_stages[0] %}
+            {% set fin  = pipeline_stages[-1] %}
+            {% if orig.metrics and fin.metrics %}
+            <div class="qchips">
+                <div class="qchip">
+                    <span class="ql">Blur</span>
+                    <span class="qv">{{ orig.metrics.blur_score }} → <strong>{{ fin.metrics.blur_score }}</strong></span>
+                </div>
+                <div class="qchip">
+                    <span class="ql">Contrast</span>
+                    <span class="qv">{{ orig.metrics.rms_contrast }} → <strong>{{ fin.metrics.rms_contrast }}</strong></span>
+                </div>
+                <div class="qchip {{ 'good' if fin.metrics.quality_ok else 'warn' }}">
+                    <span class="ql">Quality</span>
+                    <span class="qv"><strong>{{ '✓ Good' if fin.metrics.quality_ok else '⚠ Check' }}</strong></span>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Flow strip -->
+        <div class="flow-strip">
+            {% for stage in pipeline_stages %}
+            <div class="flow-node {% if loop.first %}first{% elif loop.last %}last{% endif %}">
+                <div class="flow-bubble">{{ stage.icon }}</div>
+                <span class="flow-lbl">{{ stage.label }}</span>
+            </div>
+            {% if not loop.last %}<span class="flow-arr">→</span>{% endif %}
+            {% endfor %}
+        </div>
+
+        <div class="pipe-divider"></div>
+
+        <!-- Stage cards grid -->
+        <div class="stages-grid">
+            {% for stage in pipeline_stages %}
+            <div class="stage-card"
+                 onclick="openLb('{{ stage.image_url }}','{{ stage.label }}','{{ stage.description }}')">
+                <div class="stage-num">{{ '%02d' % loop.index0 }}</div>
+                <div class="stage-thumb">
+                    <img src="{{ url_for('static', filename=stage.image_url) }}"
+                         alt="{{ stage.label }}" loading="lazy">
+                    <div class="stage-overlay"><span>⛶ Full View</span></div>
+                </div>
+                <div class="stage-body">
+                    <div class="stage-name-row">
+                        <span class="stage-emoji">{{ stage.icon }}</span>
+                        <h6 class="stage-title">{{ stage.label }}</h6>
+                    </div>
+                    <p class="stage-desc">{{ stage.description[:92] }}{% if stage.description|length > 92 %}…{% endif %}</p>
+                    {% if stage.metrics %}
+                    <div class="stage-tags">
+                        {% for k, v in stage.metrics.items() %}
+                        {% if k not in ['overexposed','underexposed','quality_ok'] %}
+                        <span class="stage-tag">{{ k.replace('_',' ') }}: <strong>{{ v }}</strong></span>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Before / After slider -->
+        <div class="ba-section">
+            <div class="ba-title">⟵ Drag to Compare: Original vs Enhanced ⟶</div>
+            <div class="ba-wrap" id="baWrap">
+                <img src="{{ url_for('static', filename=pipeline_stages[-1].image_url) }}" alt="Enhanced">
+                <div class="ba-clip" id="baClip">
+                    <img src="{{ url_for('static', filename=pipeline_stages[0].image_url) }}" alt="Original">
+                </div>
+                <div class="ba-line" id="baLine"><div class="ba-knob">⇔</div></div>
+                <span class="ba-tag l">ORIGINAL</span>
+                <span class="ba-tag r">ENHANCED</span>
+            </div>
+        </div>
+
+    </div>
+    {% endif %}
+
+</div><!-- /container -->
+</div><!-- /main-content -->
+
+<!-- Lightbox -->
+<div class="lb" id="lb" onclick="closeLb()">
+    <div class="lb-box" onclick="event.stopPropagation()">
+        <button class="lb-close" onclick="closeLb()">✕</button>
+        <img id="lb-img" src="" class="lb-img" alt="">
+        <div class="lb-cap">
+            <h4 id="lb-title"></h4>
+            <p  id="lb-desc"></p>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+<script>
+/* ── Upload UX ──────────────────────────────── */
+document.addEventListener('DOMContentLoaded', function () {
+    const fi   = document.getElementById('fileInput');
+    const area = document.getElementById('uploadArea');
+    const lbl  = document.getElementById('uploadLabel');
+    if (!fi) return;
+
+    fi.addEventListener('change', e => {
+        if (e.target.files.length) {
+            lbl.textContent = '✓ ' + e.target.files[0].name;
+            area.classList.add('selected');
+        }
+    });
+    area.addEventListener('dragover',  e => { e.preventDefault(); area.style.borderColor = '#3498db'; });
+    area.addEventListener('dragleave', () => { area.style.borderColor = ''; });
+    area.addEventListener('drop', e => {
+        e.preventDefault();
+        fi.files = e.dataTransfer.files;
+        fi.dispatchEvent(new Event('change'));
+    });
+});
+
+/* ── Enhancement toggle ─────────────────────── */
+function toggleEnhance() {
+    const toggle = document.getElementById('enhToggle');
+    const input  = document.getElementById('useEnhancement');
+    const desc   = document.getElementById('etDesc');
+    const pill   = document.getElementById('etPill');
+    const isOn   = toggle.classList.toggle('on');
+    input.value  = isOn ? '1' : '0';
+    desc.textContent = isOn
+        ? 'On — 10-stage pipeline enhances image before analysis'
+        : 'Off — raw image sent directly to model';
+    pill.textContent = isOn ? 'On' : 'Off';
+}
+
+/* ── Lightbox ───────────────────────────────── */
+function openLb(url, title, desc) {
+    document.getElementById('lb-img').src             = '/static/' + url;
+    document.getElementById('lb-title').textContent   = title;
+    document.getElementById('lb-desc').textContent    = desc;
+    document.getElementById('lb').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+function closeLb() {
+    document.getElementById('lb').classList.remove('open');
+    document.body.style.overflow = '';
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLb(); });
+
+/* ── Before/After drag ──────────────────────── */
+(function () {
+    const wrap = document.getElementById('baWrap');
+    if (!wrap) return;
+    const clip = document.getElementById('baClip');
+    const line = document.getElementById('baLine');
+    let drag = false;
+
+    function setPos(cx) {
+        const r = wrap.getBoundingClientRect();
+        const p = Math.max(2, Math.min(98, (cx - r.left) / r.width * 100));
+        clip.style.clipPath = `inset(0 ${100 - p}% 0 0)`;
+        line.style.left = p + '%';
+    }
+
+    wrap.addEventListener('mousedown',  e => { drag = true; setPos(e.clientX); });
+    window.addEventListener('mouseup',  () => drag = false);
+    window.addEventListener('mousemove',e => { if (drag) setPos(e.clientX); });
+    wrap.addEventListener('touchstart', e => { drag = true; setPos(e.touches[0].clientX); }, { passive: true });
+    window.addEventListener('touchend', () => drag = false);
+    window.addEventListener('touchmove',e => { if (drag) setPos(e.touches[0].clientX); }, { passive: true });
+
+    // Intro sweep
+    let p = 50, d = -0.7;
+    const t = setInterval(() => {
+        p += d;
+        if (p < 20 || p > 80) d *= -1;
+        clip.style.clipPath = `inset(0 ${100 - p}% 0 0)`;
+        line.style.left = p + '%';
+        if (p <= 20) clearInterval(t);
+    }, 16);
+})();
+
+/* ── Staggered stage card reveal ────────────── */
+document.querySelectorAll('.stage-card').forEach((card, i) => {
+    card.style.opacity = '0';
+    card.style.transform = 'translateY(16px)';
+    setTimeout(() => {
+        card.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+        card.style.opacity = '1';
+        card.style.transform = 'translateY(0)';
+    }, 100 + i * 52);
+});
+</script>
+</body>
+</html>

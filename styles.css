@@ -1,0 +1,52 @@
+.pipeline-section {
+  background: rgba(255,255,255,0.04);
+  border-radius: 24px;
+  padding: 30px;
+  margin-top: 40px;
+}
+
+.stages-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:15px;
+}
+
+.stage-card {
+  background:rgba(255,255,255,0.05);
+  border-radius:12px;
+  padding:10px;
+  cursor:pointer;
+}
+
+.stage-img-wrap {
+  aspect-ratio:1;
+  overflow:hidden;
+}
+
+.stage-img {
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+
+.ba-container {
+  position:relative;
+  max-width:600px;
+  aspect-ratio:1;
+  overflow:hidden;
+}
+
+.ba-before-wrap {
+  position:absolute;
+  inset:0;
+  clip-path: inset(0 50% 0 0);
+}
+
+.ba-divider {
+  position:absolute;
+  top:0;
+  bottom:0;
+  left:50%;
+  width:2px;
+  background:white;
+}
